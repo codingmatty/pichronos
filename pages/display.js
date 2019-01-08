@@ -1,5 +1,5 @@
 import Router from 'next/router';
-import styled from 'styled-components';
+import styled, { ThemeProvider } from 'styled-components';
 import cron from 'cron';
 import moment from 'moment';
 
@@ -7,10 +7,10 @@ const DisplayContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100%;
   width: 100%;
-  background: black;
-  color: white;
+  background-color: ${({ theme }) => theme.backgroundColor};
+  color: ${({ theme }) => theme.color};
   position: relative;
 `;
 const TimeWrapper = styled.div`
@@ -47,26 +47,64 @@ function RefreshButton() {
   return <RefreshButtonWrapper onClick={onClick}>Refresh</RefreshButtonWrapper>;
 }
 
+const defaultTheme = {
+  backgroundColor: 'black',
+  color: 'white'
+};
+
 export default class Display extends React.Component {
-  state = { time: null };
+  state = { time: null, theme: {} };
 
   componentDidMount() {
     this.cronJob = new cron.CronJob('* * * * * *', () => {
       this.setState({ time: moment() });
     });
     this.cronJob.start();
+    this.setState({ theme: this.generateTheme() });
+  }
+
+  componentDidUpdate({ theme }) {
+    const themePropsChanged = Object.keys(theme).some(
+      (key) => theme[key] !== this.props.theme[key]
+    );
+    if (themePropsChanged) {
+      this.setState({ theme: this.generateTheme() });
+    }
   }
 
   componentWillUnmount() {
     this.cronJob.stop();
   }
 
+  generateTheme = () => {
+    const { theme } = this.props;
+
+    const generatedTheme = { ...defaultTheme };
+    Object.keys(theme).forEach((key) => {
+      if (theme[key]) {
+        generatedTheme[key] = theme[key];
+      }
+    });
+
+    return generatedTheme;
+  };
+
   render() {
+    const { time, theme } = this.state;
+
     return (
-      <DisplayContainer>
-        <Time />
-        <RefreshButton />
-      </DisplayContainer>
+      <ThemeProvider theme={theme}>
+        <DisplayContainer>
+          <Time time={time} />
+          <RefreshButton />
+        </DisplayContainer>
+      </ThemeProvider>
     );
   }
 }
+
+Display.getInitialProps = async ({ req }) => {
+  const res = await fetch(`http://${req.headers.host}/api/theme`);
+  const { theme } = await res.json();
+  return { theme };
+};

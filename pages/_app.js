@@ -17,6 +17,12 @@ const GlobalStyle = createGlobalStyle`
     font-size: 1.25rem;
     line-height: 2;
   }
+
+  #__next {
+    height: 100vh;
+    width: 100%;
+    position: relative;
+  }
 `;
 
 export default class MyApp extends App {

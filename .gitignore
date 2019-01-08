@@ -2,3 +2,4 @@
 node_modules/
 pichronos-*
 next-build/
+db.json
