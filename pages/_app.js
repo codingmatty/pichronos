@@ -6,6 +6,7 @@ const GlobalStyle = createGlobalStyle`
   html {
     box-sizing: border-box;
     font-size: 12px;
+    font-family: sans-serif;
   }
   *, *:before, *:after {
     box-sizing: inherit;
@@ -16,14 +17,6 @@ const GlobalStyle = createGlobalStyle`
     font-size: 1.25rem;
     line-height: 2;
   }
-`;
-
-const AppContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  width: 100%;
 `;
 
 export default class MyApp extends App {
@@ -43,9 +36,7 @@ export default class MyApp extends App {
     return (
       <Container>
         <GlobalStyle />
-        <AppContainer>
-          <Component {...pageProps} />
-        </AppContainer>
+        <Component {...pageProps} />
       </Container>
     );
   }
