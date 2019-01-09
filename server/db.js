@@ -4,7 +4,10 @@ const merge = require('lodash/merge');
 const hash = require('object-hash');
 const FileSync = require('lowdb/adapters/FileSync');
 
-const adapter = new FileSync(path.join(__dirname, '..', 'db.json'));
+const dbFilePath = process.env.DB_PATH
+  ? path.resolve(process.env.DB_PATH)
+  : path.join(__dirname, '..', 'db.json');
+const adapter = new FileSync(dbFilePath);
 const db = low(adapter);
 
 const defaultConfig = { theme: { backgroundColor: 'black', color: 'white' } };
