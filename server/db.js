@@ -16,9 +16,7 @@ db.defaults({
 
 function updateConfig(partialConfig) {
   const currentConfig = db.get('config').value();
-  console.log('currentConfig: ', currentConfig);
   const updatedConfig = merge(currentConfig, partialConfig);
-  console.log('updatedConfig: ', updatedConfig);
   db.set('config', updatedConfig).write();
   db.set('hash', hash(updatedConfig)).write();
 }
@@ -31,7 +29,12 @@ function getTheme() {
   return db.get('config.theme').value();
 }
 
+function getHash() {
+  return db.get('hash').value();
+}
+
 module.exports = {
+  updateTheme,
   getTheme,
-  updateTheme
+  getHash
 };

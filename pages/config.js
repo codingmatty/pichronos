@@ -39,6 +39,7 @@ export default class Config extends React.Component {
             <div>
               <input
                 type="text"
+                value={theme.backgroundColor}
                 onChange={({ target }) =>
                   this.setState(({ theme }) => ({
                     theme: { ...theme, backgroundColor: target.value }
@@ -52,6 +53,7 @@ export default class Config extends React.Component {
             <div>
               <input
                 type="text"
+                value={theme.color}
                 onChange={({ target }) =>
                   this.setState(({ theme }) => ({
                     theme: { ...theme, color: target.value }
@@ -64,7 +66,7 @@ export default class Config extends React.Component {
         </form>
         <h2>Display:</h2>
         <DisplayWrapper>
-          <Display theme={theme} />
+          <Display theme={theme} shouldRefreshOnConfigChange={false} />
         </DisplayWrapper>
       </ConfigContainer>
     );
@@ -72,7 +74,8 @@ export default class Config extends React.Component {
 }
 
 Config.getInitialProps = async ({ req }) => {
-  const res = await fetch(`http://${req.headers.host}/api/theme`);
+  const urlPrefix = req ? `http://${req.headers.host}` : '';
+  const res = await fetch(`${urlPrefix}/api/theme`);
   const { theme } = await res.json();
   return { theme };
 };

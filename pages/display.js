@@ -43,7 +43,7 @@ function RefreshButton() {
   let onClick =
     typeof window === 'undefined'
       ? () => {}
-      : () => Router.replace(window.location.href, { shallow: true });
+      : () => Router.replace(window.location.href);
   return <RefreshButtonWrapper onClick={onClick}>Refresh</RefreshButtonWrapper>;
 }
 
@@ -53,13 +53,26 @@ const defaultTheme = {
 };
 
 export default class Display extends React.Component {
+  static defaultProps = {
+    shouldRefreshOnConfigChange: true
+  };
+
   state = { time: null, theme: {} };
 
+  timeCronJob = new cron.CronJob('* * * * * *', () => {
+    this.setState({ time: moment() });
+  });
+
+  configCronJob = new cron.CronJob('0 * * * * *', () => {
+    this.checkConfigHash();
+  });
+
   componentDidMount() {
-    this.cronJob = new cron.CronJob('* * * * * *', () => {
-      this.setState({ time: moment() });
-    });
-    this.cronJob.start();
+    const { shouldRefreshOnConfigChange } = this.props;
+    this.timeCronJob.start();
+    if (shouldRefreshOnConfigChange) {
+      this.configCronJob.start();
+    }
     this.setState({ theme: this.generateTheme() });
   }
 
@@ -73,8 +86,18 @@ export default class Display extends React.Component {
   }
 
   componentWillUnmount() {
-    this.cronJob.stop();
+    this.timeCronJob.stop();
+    this.configCronJob.stop();
   }
+
+  checkConfigHash = async () => {
+    const { hash } = this.props;
+    const res = await fetch('/api/hash');
+    const { hash: newHash } = await res.json();
+    if (hash !== newHash) {
+      Router.replace(window.location.href);
+    }
+  };
 
   generateTheme = () => {
     const { theme } = this.props;
@@ -105,7 +128,9 @@ export default class Display extends React.Component {
 
 Display.getInitialProps = async ({ req }) => {
   const urlPrefix = req ? `http://${req.headers.host}` : '';
-  const res = await fetch(`${urlPrefix}/api/theme`);
-  const { theme } = await res.json();
-  return { theme };
+  const themeRes = await fetch(`${urlPrefix}/api/theme`);
+  const hashRes = await fetch(`${urlPrefix}/api/hash`);
+  const { theme } = await themeRes.json();
+  const { hash } = await hashRes.json();
+  return { theme, hash };
 };

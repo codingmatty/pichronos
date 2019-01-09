@@ -41,6 +41,10 @@ function registerRoutes() {
 
   router.get('/ping', (req, res) => res.send('pong'));
 
+  router.get('/hash', (req, res) => {
+    const hash = db.getHash();
+    res.send({ hash });
+  });
   router.get('/theme', (req, res) => {
     const theme = db.getTheme();
     res.send({ theme });
