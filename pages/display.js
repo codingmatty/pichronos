@@ -43,7 +43,7 @@ function RefreshButton() {
   let onClick =
     typeof window === 'undefined'
       ? () => {}
-      : () => Router.replace(window.location.href);
+      : () => Router.replace(window.location.href, { shallow: true });
   return <RefreshButtonWrapper onClick={onClick}>Refresh</RefreshButtonWrapper>;
 }
 
@@ -104,7 +104,8 @@ export default class Display extends React.Component {
 }
 
 Display.getInitialProps = async ({ req }) => {
-  const res = await fetch(`http://${req.headers.host}/api/theme`);
+  const urlPrefix = req ? `http://${req.headers.host}` : '';
+  const res = await fetch(`${urlPrefix}/api/theme`);
   const { theme } = await res.json();
   return { theme };
 };
