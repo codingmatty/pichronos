@@ -1,5 +1,6 @@
 require('isomorphic-fetch');
 
+const backlight = require('rpi-backlight');
 const express = require('express');
 const http = require('http');
 const next = require('next');
@@ -12,6 +13,7 @@ const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev, dir: path.join(__dirname, '..') });
 const handle = app.getRequestHandler();
 
+backlight.setBrightness(75);
 app
   .prepare()
   .then(() => {
