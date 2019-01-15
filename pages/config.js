@@ -1,5 +1,6 @@
 import moment from 'moment';
 import styled from 'styled-components';
+import isEqual from 'lodash/isEqual';
 import Display from '../components/Display';
 
 const ConfigContainer = styled.div`
@@ -17,20 +18,33 @@ const DisplayWrapper = styled.div`
 `;
 
 export default class Config extends React.Component {
-  state = { theme: this.props.theme };
+  state = {
+    dirty: false,
+    brightness: this.props.brightness,
+    theme: this.props.theme
+  };
 
   submitForm = (e) => {
     e.preventDefault();
-    const { theme } = this.state;
-    fetch('/api/theme', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ theme })
-    });
+    const { brightness, theme } = this.state;
+    if (!isEqual(theme, this.props.theme)) {
+      fetch('/api/theme', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme })
+      });
+    }
+    if (brightness !== this.props.brightness) {
+      fetch('/api/brightness', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brightness })
+      });
+    }
   };
 
   render() {
-    const { theme } = this.state;
+    const { dirty, brightness, theme } = this.state;
 
     return (
       <ConfigContainer>
@@ -43,6 +57,7 @@ export default class Config extends React.Component {
                 value={theme.backgroundColor}
                 onChange={({ target }) =>
                   this.setState(({ theme }) => ({
+                    dirty: true,
                     theme: { ...theme, backgroundColor: target.value }
                   }))
                 }
@@ -57,13 +72,33 @@ export default class Config extends React.Component {
                 value={theme.color}
                 onChange={({ target }) =>
                   this.setState(({ theme }) => ({
+                    dirty: true,
                     theme: { ...theme, color: target.value }
                   }))
                 }
               />
             </div>
           </div>
-          <button>Submit</button>
+          <div>
+            <label>
+              Brightness: {(((brightness - 50) / 205) * 100).toFixed(0)}%
+            </label>
+            <div>
+              <input
+                type="range"
+                min="50"
+                max="255"
+                value={brightness}
+                onChange={({ target }) =>
+                  this.setState(() => ({
+                    dirty: true,
+                    brightness: target.value
+                  }))
+                }
+              />
+            </div>
+          </div>
+          <button disabled={!dirty}>Submit</button>
         </form>
         <h2>Display:</h2>
         <DisplayWrapper>
@@ -76,7 +111,7 @@ export default class Config extends React.Component {
 
 Config.getInitialProps = async ({ req }) => {
   const urlPrefix = req ? `http://${req.headers.host}` : '';
-  const res = await fetch(`${urlPrefix}/api/theme`);
-  const { theme } = await res.json();
-  return { theme };
+  const res = await fetch(`${urlPrefix}/api/config`);
+  const { config } = await res.json();
+  return config;
 };

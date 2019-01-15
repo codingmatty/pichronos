@@ -10,7 +10,10 @@ const dbFilePath = process.env.DB_PATH
 const adapter = new FileSync(dbFilePath);
 const db = low(adapter);
 
-const defaultConfig = { theme: { backgroundColor: 'black', color: 'white' } };
+const defaultConfig = {
+  brightness: 255,
+  theme: { backgroundColor: 'black', color: 'white' }
+};
 
 db.defaults({
   config: defaultConfig,
@@ -24,18 +27,24 @@ function updateConfig(partialConfig) {
   db.set('hash', hash(updatedConfig)).write();
 }
 
+// Mutators:
+exports.updateBrightness = (brightness) => {
+  updateConfig({ brightness });
+};
 exports.updateTheme = (theme) => {
   updateConfig({ theme });
 };
 
+// Getters:
 exports.getConfig = () => {
   return db.get('config').value();
 };
-
+exports.getBrightness = () => {
+  return db.get('config.brightness').value();
+};
 exports.getTheme = () => {
   return db.get('config.theme').value();
 };
-
 exports.getHash = () => {
   return db.get('hash').value();
 };

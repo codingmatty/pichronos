@@ -1,4 +1,6 @@
 const express = require('express');
+const clamp = require('lodash/clamp');
+const backlight = require('./backlight');
 const db = require('./db');
 const { CONFIG_CHANGED } = require('../common/socket-events.json');
 
@@ -14,6 +16,11 @@ function registerApiRoutes(io) {
     res.send({ hash });
   });
 
+  router.get('/config', (req, res) => {
+    const config = db.getConfig();
+    res.send({ config });
+  });
+
   router.get('/theme', (req, res) => {
     const theme = db.getTheme();
     res.send({ theme });
@@ -25,6 +32,18 @@ function registerApiRoutes(io) {
     // Push config through socket
     const config = db.getConfig();
     io.emit(CONFIG_CHANGED, config);
+
+    res.status(200).end();
+  });
+
+  router.post('/brightness', (req, res) => {
+    const brightnessValue = clamp(
+      req.body.brightness,
+      50,
+      backlight.getMaxBrightness()
+    );
+    db.updateBrightness(brightnessValue);
+    backlight.setBrightness(brightnessValue);
 
     res.status(200).end();
   });
