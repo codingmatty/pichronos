@@ -8,9 +8,8 @@
     "dev": "nodemon --watch server server",
     "build": "npx next build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepack": "npm run build",
     "version": "npm run build",
-    "postversion": "git push && git push --tags && rm -rf build/temp"
+    "postversion": "git push && git push --tags && npm pack"
   },
   "author": "",
   "license": "ISC",

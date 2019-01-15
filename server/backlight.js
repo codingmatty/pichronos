@@ -1,6 +1,6 @@
 let backlight = {
-  setBrightness: () => {},
-  getMaxBrightness: () => 255
+  setBrightness: () => Promise.resolve(),
+  getMaxBrightness: () => Promise.resolve(255)
 };
 
 try {

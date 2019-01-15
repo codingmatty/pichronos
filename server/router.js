@@ -36,14 +36,11 @@ function registerApiRoutes(io) {
     res.status(200).end();
   });
 
-  router.post('/brightness', (req, res) => {
-    const brightnessValue = clamp(
-      req.body.brightness,
-      50,
-      backlight.getMaxBrightness()
-    );
+  router.post('/brightness', async (req, res) => {
+    const maxBrightness = await backlight.getMaxBrightness();
+    const brightnessValue = clamp(req.body.brightness, 0, maxBrightness);
+    await backlight.setBrightness(brightnessValue);
     db.updateBrightness(brightnessValue);
-    backlight.setBrightness(brightnessValue);
 
     res.status(200).end();
   });
