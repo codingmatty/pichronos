@@ -1,11 +1,12 @@
 require('isomorphic-fetch');
 
 const express = require('express');
+const http = require('http');
 const next = require('next');
 const path = require('path');
-const bodyParser = require('body-parser');
+const socketIO = require('socket.io');
 const { parse } = require('url');
-const db = require('./db');
+const registerApiRoutes = require('./router');
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev, dir: path.join(__dirname, '..') });
@@ -14,16 +15,17 @@ const handle = app.getRequestHandler();
 app
   .prepare()
   .then(() => {
-    const server = express();
+    const port = process.env.PORT || 8080;
+    const handler = express();
+    const server = http.createServer(handler);
+    const io = socketIO(server);
 
-    server.use('/api', registerRoutes());
-
-    server.get('*', (req, res) => {
+    handler.use('/api', registerApiRoutes(io));
+    handler.get('*', (req, res) => {
       const parsedUrl = parse(req.url, true);
       handle(req, res, parsedUrl);
     });
 
-    const port = process.env.PORT || 8080;
     server.listen(port, (err) => {
       if (err) throw err;
       console.log(`Server listening on port ${port}`);
@@ -33,26 +35,3 @@ app
     console.error(ex.stack);
     process.exit(1);
   });
-
-function registerRoutes() {
-  const router = new express.Router();
-
-  router.use(bodyParser.json());
-
-  router.get('/ping', (req, res) => res.send('pong'));
-
-  router.get('/hash', (req, res) => {
-    const hash = db.getHash();
-    res.send({ hash });
-  });
-  router.get('/theme', (req, res) => {
-    const theme = db.getTheme();
-    res.send({ theme });
-  });
-  router.post('/theme', (req, res) => {
-    db.updateTheme(req.body.theme);
-    res.status(200).end();
-  });
-
-  return router;
-}

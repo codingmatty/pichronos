@@ -24,20 +24,18 @@ function updateConfig(partialConfig) {
   db.set('hash', hash(updatedConfig)).write();
 }
 
-function updateTheme(theme) {
+exports.updateTheme = (theme) => {
   updateConfig({ theme });
-}
+};
 
-function getTheme() {
+exports.getConfig = () => {
+  return db.get('config').value();
+};
+
+exports.getTheme = () => {
   return db.get('config.theme').value();
-}
+};
 
-function getHash() {
+exports.getHash = () => {
   return db.get('hash').value();
-}
-
-module.exports = {
-  updateTheme,
-  getTheme,
-  getHash
 };

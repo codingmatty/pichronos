@@ -1,5 +1,6 @@
+import moment from 'moment';
 import styled from 'styled-components';
-import Display from './display';
+import Display from '../components/Display';
 
 const ConfigContainer = styled.div`
   display: flex;
@@ -66,7 +67,7 @@ export default class Config extends React.Component {
         </form>
         <h2>Display:</h2>
         <DisplayWrapper>
-          <Display theme={theme} shouldRefreshOnConfigChange={false} />
+          <Display time={moment()} theme={theme} />
         </DisplayWrapper>
       </ConfigContainer>
     );
